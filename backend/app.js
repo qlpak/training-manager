@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const routes = require("./routes");
 
 dotenv.config();
 
@@ -7,9 +8,7 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
+app.use("/api", routes);
 
 app.use((req, res, next) => {
   res.status(404).json({ error: "Endpoint was not found" });
