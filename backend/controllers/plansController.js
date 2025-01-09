@@ -1,4 +1,5 @@
 const { Plan } = require("../models");
+const { Op } = require("sequelize");
 
 exports.getAllPlans = async (req, res) => {
   try {
@@ -50,5 +51,28 @@ exports.deletePlan = async (req, res) => {
   } catch (error) {
     console.error("Error deleting plan:", error.message);
     res.status(500).json({ error: "Failed to delete plan;/" });
+  }
+};
+
+exports.searchPlans = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: "Query parameter is required" });
+    }
+
+    const plans = await Plan.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { description: { [Op.iLike]: `%${query}%` } },
+        ],
+      },
+    });
+
+    res.json(plans);
+  } catch (error) {
+    console.error("Error searching plans:", error.message);
+    res.status(500).json({ error: "Failed to search plans;(" });
   }
 };

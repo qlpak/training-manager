@@ -1,4 +1,28 @@
 const { User } = require("../models");
+const { Op } = require("sequelize");
+
+exports.searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: "Query parameter is required" });
+    }
+
+    const users = await User.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { email: { [Op.iLike]: `%${query}%` } },
+        ],
+      },
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching users:", error.message);
+    res.status(500).json({ error: "Failed to search users;/" });
+  }
+};
 
 exports.getAllUsers = async (req, res) => {
   try {
