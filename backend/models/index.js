@@ -14,6 +14,15 @@ const sequelize = new Sequelize(
   }
 );
 
+sequelize
+  .sync({ alter: true }) // adding column 'role' automatically to the database
+  .then(() => {
+    console.log("Database synchronized successfully;-)");
+  })
+  .catch((error) => {
+    console.error("Database synchronization failed:", error.message);
+  });
+
 const User = require("./user")(sequelize);
 const Plan = require("./plan")(sequelize);
 

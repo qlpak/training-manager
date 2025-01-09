@@ -5,7 +5,7 @@ exports.searchUsers = async (req, res) => {
   try {
     const { query } = req.query;
     if (!query) {
-      return res.status(400).json({ error: "Query parameter is required" });
+      return res.status(400).json({ error: "Query parameter is required..." });
     }
 
     const users = await User.findAll({
@@ -43,5 +43,32 @@ exports.createUser = async (req, res) => {
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ error: "Failed to create user :/" });
+  }
+};
+
+exports.updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!["admin", "coach", "athlete"].includes(role)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid role! Try something more ordinary;D" });
+    }
+
+    const updatedUser = await User.update(
+      { role },
+      { where: { id }, returning: true }
+    );
+
+    if (!updatedUser[1][0]) {
+      return res.status(404).json({ error: "User was not found;-(" });
+    }
+
+    res.json(updatedUser[1][0]);
+  } catch (error) {
+    console.error("Error updating user role:", error.message);
+    res.status(500).json({ error: "Failed to update user role;" });
   }
 };
