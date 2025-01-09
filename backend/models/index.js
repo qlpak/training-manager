@@ -14,6 +14,9 @@ const sequelize = new Sequelize(
   }
 );
 
+const User = require("./user")(sequelize);
+const Plan = require("./plan")(sequelize);
+
 sequelize
   .sync({ alter: true }) // adding column 'role' automatically to the database
   .then(() => {
@@ -22,9 +25,6 @@ sequelize
   .catch((error) => {
     console.error("Database synchronization failed:", error.message);
   });
-
-const User = require("./user")(sequelize);
-const Plan = require("./plan")(sequelize);
 
 module.exports = {
   sequelize,

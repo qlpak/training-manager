@@ -38,11 +38,23 @@ exports.getAllUsers = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const newUser = await User.create({ name, email, password });
+    const { name, email, password, role } = req.body;
+
+    console.log("Request body:", req.body);
+
+    if (role && !["admin", "coach", "athlete"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    const newUser = await User.create({ name, email, password, role });
     res.status(201).json(newUser);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create user :/" });
+    if (error.name === "SequelizeUniqueConstraintError") {
+      // this error seemed odd but it told me that the email must be unique so i put it here so it is more clear
+      return res.status(400).json({ error: "Email must be unique" });
+    }
+    console.error("Error creating user:", error);
+    res.status(500).json({ error: "Failed to create user", details: error });
   }
 };
 
