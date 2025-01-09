@@ -20,6 +20,7 @@ module.exports = (sequelize) => {
     {
       tableName: "plans",
       timestamps: true,
+      underscored: true,
     }
   );
 };
