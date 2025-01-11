@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Chat from "./Chat";
 
 const CoachView = () => {
   const [athletes, setAthletes] = useState([]);
+  const [selectedAthleteId, setSelectedAthleteId] = useState(null);
   const [selectedAthletePlans, setSelectedAthletePlans] = useState([]);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState("Unknown");
 
   useEffect(() => {
-    fetchAthletes();
-  }, []);
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-  const fetchAthletes = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:3000/api/users?role=athlete",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setAthletes(response.data);
-    } catch (err) {
-      console.error("Failed to fetch athletes:", err);
-      setError("Failed to fetch athletes;[");
-    }
-  };
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        setUsername(decodedToken.name || "Unknown");
+
+        const response = await axios.get(
+          "http://localhost:3000/api/users?role=athlete",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setAthletes(response.data);
+      } catch (err) {
+        console.error("Failed to fetch athletes:", err);
+        setError("Failed to fetch athletes;");
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAddPlan = async (athleteId) => {
     const name = prompt("Enter plan name:");
@@ -74,7 +81,6 @@ const CoachView = () => {
       <h2 className="text-center">Manage Athletes</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <div className="row">
-        {/* {list of athletes here} */}
         <div className="col-md-6">
           <h3>Athletes</h3>
           <ul className="list-group">
@@ -92,10 +98,16 @@ const CoachView = () => {
                     View Plans
                   </button>
                   <button
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm me-2"
                     onClick={() => handleAddPlan(athlete.id)}
                   >
                     Add Plan
+                  </button>
+                  <button
+                    className="btn btn-success btn-sm"
+                    onClick={() => setSelectedAthleteId(athlete.id)}
+                  >
+                    Chat
                   </button>
                 </div>
               </li>
@@ -103,7 +115,7 @@ const CoachView = () => {
           </ul>
         </div>
 
-        {/* {athlete plans there} */}
+        {/* {plans there} */}
         <div className="col-md-6">
           <h3>Selected Athlete's Plans</h3>
           {selectedAthletePlans.length > 0 ? (
@@ -126,6 +138,15 @@ const CoachView = () => {
             <p>No plans to display</p>
           )}
         </div>
+      </div>
+
+      {/* {chat there} */}
+      <div className="mt-5">
+        {selectedAthleteId ? (
+          <Chat roomId={`room-${selectedAthleteId}`} username={username} />
+        ) : (
+          <p>Select an athlete to start chatting</p>
+        )}
       </div>
     </div>
   );

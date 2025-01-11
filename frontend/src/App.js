@@ -11,13 +11,17 @@ const App = () => {
   const [view, setView] = useState("home");
   const [role, setRole] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("Unknown");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded = jwtDecode(token);
+        console.log("Decoded token:", decoded);
+
         setRole(decoded.role);
+        setUsername(decoded.name || "Unknown");
         setIsLoggedIn(true);
         console.log("User is logged in:", true);
         setView(decoded.role);
@@ -44,9 +48,9 @@ const App = () => {
         />
       );
     if (view === "register") return <RegisterForm setView={setView} />;
-    if (role === "admin") return <AdminView />;
-    if (role === "coach") return <CoachView />;
-    if (role === "athlete") return <AthleteView />;
+    if (role === "admin") return <AdminView username={username} />;
+    if (role === "coach") return <CoachView username={username} />;
+    if (role === "athlete") return <AthleteView username={username} />;
     return <h2>Welcome to Training Manager</h2>;
   };
 

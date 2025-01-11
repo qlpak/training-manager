@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Chat from "./Chat";
 
 const AthleteView = () => {
   const [plans, setPlans] = useState([]);
   const [error, setError] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState("Unknown");
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         const token = localStorage.getItem("token");
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        const userIdFromToken = decodedToken.id;
+        const usernameFromToken = decodedToken.name || "Unknown";
 
-        const userId = JSON.parse(atob(token.split(".")[1])).id;
-        console.log("Fetching plans for user ID:", userId);
+        setUserId(userIdFromToken);
+        setUsername(usernameFromToken);
+
+        console.log("Fetching plans for user ID:", userIdFromToken);
 
         const response = await axios.get(
-          `http://localhost:3000/api/plans/user/${userId}`,
+          `http://localhost:3000/api/plans/user/${userIdFromToken}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -57,6 +65,15 @@ const AthleteView = () => {
           ))}
         </div>
       )}
+      {/* {chat there} */}
+      <div className="mt-5">
+        <h3>Chat with your coach</h3>
+        {userId ? (
+          <Chat roomId={`room-${userId}`} username={username} />
+        ) : (
+          <p>Loading chat...</p>
+        )}
+      </div>
     </div>
   );
 };
