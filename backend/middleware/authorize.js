@@ -1,16 +1,22 @@
-module.exports = (requiredRole) => {
+module.exports = (role) => {
   return (req, res, next) => {
     try {
       const userRole = req.user.role;
-      if (userRole !== requiredRole) {
-        return res
-          .status(403)
-          .json({ error: "Access denied. Insufficient permissions." });
+      const userId = req.user.id;
+      const requestedId = parseInt(req.params.id);
+
+      if (userRole === "athlete" && userId !== requestedId) {
+        return res.status(403).json({ error: "Forbidden" });
       }
-      next(); // can continue if the user has 'acceptable' role
+
+      if (role.includes(userRole)) {
+        return next();
+      }
+
+      return res.status(403).json({ error: "Forbidden" });
     } catch (error) {
       console.error("Authorization error:", error.message);
-      res.status(500).json({ error: "Failed to authorize user" });
+      res.status(403).json({ error: "Forbidden" });
     }
   };
 };

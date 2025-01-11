@@ -10,12 +10,23 @@ exports.getAllPlans = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch plans ;/" });
   }
 };
-
 exports.createPlan = async (req, res) => {
   try {
-    const { name, description, duration } = req.body;
-    const newPlan = await Plan.create({ name, description, duration });
-    res.status(201).json(newPlan);
+    const { name, description, duration, id } = req.body;
+
+    if (!name || !description || !duration || !id) {
+      return res.status(400).json({ error: "All fields are required!" });
+    }
+
+    const newPlan = await Plan.create({
+      name,
+      description,
+      duration,
+      user_id: id,
+    });
+    res
+      .status(201)
+      .json({ message: "Plan created successfully", plan: newPlan });
   } catch (error) {
     console.error("Error creating plan:", error.message);
     res.status(500).json({ error: "Failed to create plan;(" });
@@ -74,5 +85,20 @@ exports.searchPlans = async (req, res) => {
   } catch (error) {
     console.error("Error searching plans:", error.message);
     res.status(500).json({ error: "Failed to search plans;(" });
+  }
+};
+exports.getPlansByUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const plans = await Plan.findAll({
+      where: { user_id: id },
+      attributes: ["id", "name", "description", "duration"],
+    });
+
+    res.status(200).json(plans);
+  } catch (error) {
+    console.error("Error fetching plans:", error.message);
+    res.status(500).json({ error: "Failed to fetch plans..;[" });
   }
 };

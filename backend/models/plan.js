@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 
-module.exports = (sequelize) => {
+const Plan = (sequelize) => {
   return sequelize.define(
     "Plan",
     {
@@ -16,11 +16,15 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
     {
       tableName: "plans",
       timestamps: true,
-      underscored: true,
     }
   );
 };
+module.exports = Plan;

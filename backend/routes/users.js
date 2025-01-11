@@ -4,6 +4,7 @@ const {
   createUser,
   searchUsers,
   updateUserRole,
+  deleteUser,
 } = require("../controllers/usersController");
 const verifyToken = require("../middleware/verifyToken");
 const authorize = require("../middleware/authorize");
@@ -15,5 +16,7 @@ router.post("/", createUser);
 router.get("/search", searchUsers);
 router.put("/:id/role", updateUserRole);
 router.put("/:id/role", verifyToken, authorize("admin"), updateUserRole);
+router.get("/", verifyToken, authorize("admin"), getAllUsers);
+router.delete("/:id", verifyToken, authorize("admin"), deleteUser);
 
 module.exports = router;
