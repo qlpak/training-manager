@@ -17,6 +17,6 @@ router.get("/search", searchUsers);
 router.put("/:id/role", updateUserRole);
 router.put("/:id/role", verifyToken, authorize("admin"), updateUserRole);
 router.get("/", verifyToken, authorize("admin"), getAllUsers);
-router.delete("/:id", verifyToken, authorize("admin"), deleteUser);
+router.delete("/:id", verifyToken, deleteUser);
 
 module.exports = router;
