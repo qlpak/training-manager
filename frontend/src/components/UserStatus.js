@@ -5,23 +5,27 @@ const UserStatus = ({ id }) => {
   const [status, setStatus] = useState("Offline");
 
   useEffect(() => {
+    if (!id) return;
+
     const topic = `users/${id}/status`;
 
     console.log(`Subscribing to topic: ${topic}`);
     mqttClient.subscribe(topic);
 
-    mqttClient.on("message", (topicReceived, message) => {
-      console.log(
-        `Received topic: ${topicReceived}, message: ${message.toString()}`
-      );
+    const handleMessage = (topicReceived, message) => {
       if (topicReceived === topic) {
         setStatus(message.toString());
       }
-    });
+    };
+
+    mqttClient.on("message", handleMessage);
+
+    mqttClient.publish(topic, "Online", { retain: true });
 
     return () => {
       console.log(`Unsubscribing from topic: ${topic}`);
       mqttClient.unsubscribe(topic);
+      mqttClient.off("message", handleMessage);
     };
   }, [id]);
 
@@ -36,11 +40,7 @@ const UserStatus = ({ id }) => {
     backgroundColor: status === "Online" ? "green" : "gray",
   };
 
-  return (
-    <div>
-      <span style={statusStyle}>{status}</span>
-    </div>
-  );
+  return <span style={statusStyle}>{status}</span>;
 };
 
 export default UserStatus;

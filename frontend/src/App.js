@@ -20,52 +20,40 @@ const App = () => {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        console.log("Decoded token:", decoded);
+    const handleMqttMessage = (topic, message) => {
+      console.log(`Received MQTT message on ${topic}:`, message.toString());
 
-        setRole(decoded.role);
-        setUsername(decoded.name || "Unknown");
-        setUserId(decoded.id);
-        setIsLoggedIn(true);
-        setView(decoded.role);
-
-        mqttClient.publish(`users/${decoded.id}/status`, "Online", {
-          retain: true,
-        });
-
-        mqttClient.subscribe(`notifications/${decoded.id}`);
-        mqttClient.subscribe("users/+/status");
-      } catch (error) {
-        console.error("Invalid token:", error);
-        localStorage.removeItem("token");
-        setIsLoggedIn(false);
-        setView("login");
+      const topicParts = topic.split("/");
+      if (topicParts[0] === "users" && topicParts[2] === "status") {
+        const athleteId = topicParts[1];
+        const status = message.toString();
+        if (status === "Online" && role === "coach") {
+          setOnlineUsers((prev) => {
+            if (!prev.has(athleteId)) {
+              const newUsers = new Set(prev);
+              newUsers.add(athleteId);
+              toast.info(`Athlete ID ${athleteId} is now Online!`);
+              return newUsers;
+            }
+            return prev;
+          });
+        }
       }
-    } else {
-      setIsLoggedIn(false);
+
+      if (topicParts[0] === "notifications") {
+        const notificationData = JSON.parse(message.toString());
+        toast.info(notificationData.message);
+      }
+    };
+
+    if (!mqttClient.listenerCount("message")) {
+      mqttClient.on("message", handleMqttMessage);
     }
 
-    const handleBeforeUnload = () => {
-      if (userId) {
-        mqttClient.publish(`users/${userId}/status`, "Offline", {
-          retain: true,
-        });
-        console.log(`User ${userId} set to Offline`);
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      mqttClient.unsubscribe(`notifications/${userId}`);
-      mqttClient.unsubscribe("users/+/status");
-      socket.off("chat message");
+      mqttClient.off("message", handleMqttMessage);
     };
-  }, [userId, role]);
+  }, [role]);
 
   useEffect(() => {
     const handleMqttMessage = (topic, message) => {

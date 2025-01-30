@@ -13,9 +13,9 @@ const {
 const router = express.Router();
 
 router.get("/", getAllPlans);
-router.post("/", verifyToken, authorize(["coach"]), createPlan);
-router.put("/:id", verifyToken, authorize(["coach"]), updatePlan);
-router.delete("/:id", verifyToken, authorize(["coach"]), deletePlan);
+router.post("/", verifyToken, createPlan);
+router.put("/:id", verifyToken, updatePlan);
+router.delete("/:id", verifyToken, deletePlan);
 router.get(
   "/search",
   verifyToken,

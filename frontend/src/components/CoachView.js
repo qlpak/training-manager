@@ -38,6 +38,30 @@ const CoachView = () => {
     fetchAthletes();
   }, []);
 
+  useEffect(() => {
+    const handleStatusUpdate = (topic, message) => {
+      const parts = topic.split("/");
+      if (parts[0] === "users" && parts[2] === "status") {
+        const athleteId = parts[1];
+        setAthletes((prevAthletes) =>
+          prevAthletes.map((athlete) =>
+            athlete.id === athleteId
+              ? { ...athlete, status: message.toString() }
+              : athlete
+          )
+        );
+      }
+    };
+
+    mqttClient.subscribe("users/+/status");
+    mqttClient.on("message", handleStatusUpdate);
+
+    return () => {
+      mqttClient.unsubscribe("users/+/status");
+      mqttClient.off("message", handleStatusUpdate);
+    };
+  }, []);
+
   const handleSearchPlans = async () => {
     try {
       const token = localStorage.getItem("token");

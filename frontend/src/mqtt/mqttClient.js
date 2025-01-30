@@ -33,15 +33,8 @@ mqttClient.on("connect", () => {
   }
 });
 
-let messageHandler = null;
-
 mqttClient.on("message", (topic, message) => {
   console.log(`Received MQTT message on ${topic}:`, message.toString());
-  toast.info(message.toString(), {
-    position: "bottom-right",
-    autoClose: 3000,
-    hideProgressBar: true,
-  });
 });
 
 export const disconnectMqtt = () => {

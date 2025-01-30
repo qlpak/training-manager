@@ -5,6 +5,7 @@ import UserStatus from "../components/UserStatus";
 import socket from "../socket";
 import ReviewForm from "../components/ReviewForm";
 import TrainingStatus from "../components/TrainingStatus";
+import mqttClient from "../mqtt/mqttClient";
 
 const AthleteView = () => {
   const [plans, setPlans] = useState([]);
@@ -78,6 +79,29 @@ const AthleteView = () => {
       socket.off("updateRanking");
     };
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const topic = `users/${userId}/status`;
+
+    mqttClient.publish(topic, "Online", { retain: true });
+
+    const handleStatusUpdate = (topic, message) => {
+      const parts = topic.split("/");
+      if (parts[0] === "users" && parts[2] === "status") {
+        console.log(`Updated status for ${parts[1]}: ${message.toString()}`);
+      }
+    };
+
+    mqttClient.subscribe("users/+/status");
+    mqttClient.on("message", handleStatusUpdate);
+
+    return () => {
+      mqttClient.unsubscribe("users/+/status");
+      mqttClient.off("message", handleStatusUpdate);
+    };
+  }, [userId]);
 
   const handleSearchPlans = async () => {
     try {

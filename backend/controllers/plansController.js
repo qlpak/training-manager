@@ -72,23 +72,19 @@ exports.updatePlan = async (req, res) => {
 
     console.log(`Plan ID ${id} updated successfully.`);
 
+    const athleteId = existingPlan.user_id;
+
     if (mqttClient && mqttClient.connected) {
       mqttClient.publish(
-        `notifications/${existingPlan.user_id}`,
+        `notifications/${athleteId}`,
         JSON.stringify({
-          message: `Your training plan "${name}" has been updated.`,
+          message: `Your training plan "${name}" has been updated by your coach.`,
           timestamp: new Date().toISOString(),
-        }),
-        (err) => {
-          if (err) {
-            console.error("MQTT publish error:", err);
-          } else {
-            console.log(`Notification sent to user ${existingPlan.user_id}`);
-          }
-        }
+        })
       );
+      console.log(`Notification sent to user ${athleteId}`);
     } else {
-      console.warn("⚠️ MQTT client is not connected.");
+      console.warn("MQTT client is not connected.");
     }
 
     res.json({ message: "Plan updated successfully" });
@@ -108,24 +104,19 @@ exports.deletePlan = async (req, res) => {
     }
 
     await Plan.destroy({ where: { id } });
+    console.log(`Plan with ID ${id} deleted successfully.`);
 
-    console.log(`✅ Plan with ID ${id} deleted successfully.`);
+    const athleteId = existingPlan.user_id;
 
     if (mqttClient && mqttClient.connected) {
       mqttClient.publish(
-        `notifications/${existingPlan.user_id}`,
+        `notifications/${athleteId}`,
         JSON.stringify({
-          message: `Your training plan "${existingPlan.name}" has been deleted.`,
+          message: `Your training plan "${existingPlan.name}" has been deleted by your coach.`,
           timestamp: new Date().toISOString(),
-        }),
-        (err) => {
-          if (err) {
-            console.error("MQTT publish error:", err);
-          } else {
-            console.log(`Notification sent to user ${existingPlan.user_id}`);
-          }
-        }
+        })
       );
+      console.log(`Notification sent to user ${athleteId}`);
     } else {
       console.warn("MQTT client is not connected.");
     }
