@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import UserStatus from "../components/UserStatus";
 
 const AdminView = () => {
   const [users, setUsers] = useState([]);
@@ -70,7 +71,10 @@ const AdminView = () => {
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
-              <td>{user.name}</td>
+              <td>
+                {user.name}
+                <UserStatus id={user.id} /> {/* adding user status */}
+              </td>
               <td>{user.email}</td>
               <td>
                 <select

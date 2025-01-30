@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
+const { setUserStatus } = require("../mqtt/statusHandler");
 
 exports.login = async (req, res) => {
   try {
@@ -12,42 +13,53 @@ exports.login = async (req, res) => {
       }
 
       const token = jwt.sign(
-        { id: 0, email: "admin@admin", role: "admin" },
+        { id: 0, email: "admin@admin", role: "admin", name: "Administrator" },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "99999h" }
       );
+
+      setUserStatus(0, "Online");
 
       return res.json({ token });
     }
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({
-        error: "Invalid email or password. Maybe try memory workout?",
-      });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({
-        error: "Invalid email or password. Maybe try memory workout?",
-      });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "99999h" }
     );
+
+    setUserStatus(user.id, "Online");
 
     res.json({ token });
   } catch (error) {
     console.error("Error logging in:", error.message);
-    res.status(500).json({ error: "Failed to log in (loser)" });
+    res.status(500).json({ error: "Failed to log in" });
   }
 };
 
-console.log("JWT_SECRET:", process.env.JWT_SECRET); // debug: to see whether the jwt token is loaded correctly
+exports.logout = (req, res) => {
+  try {
+    const { id } = req.user;
+    console.log(`Publishing Offline status for user ${id}`);
+    setUserStatus(id, "Offline");
+    res.status(200).json({ message: "User logged out" });
+  } catch (error) {
+    console.error("Error during logout:", error.message);
+    res.status(500).json({ error: "Failed to log out" });
+  }
+};
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -75,7 +87,7 @@ exports.register = async (req, res) => {
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email, role: newUser.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "9999h" }
     );
 
     res.status(201).json({ user: newUser, token });

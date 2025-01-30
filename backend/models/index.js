@@ -16,6 +16,7 @@ const sequelize = new Sequelize(
 
 const User = require("./user")(sequelize);
 const Plan = require("./plan")(sequelize);
+const Review = require("./review")(sequelize);
 
 sequelize
   .sync({ alter: true }) // adding column 'role' automatically to the database
@@ -30,4 +31,5 @@ module.exports = {
   sequelize,
   User,
   Plan,
+  Review,
 };

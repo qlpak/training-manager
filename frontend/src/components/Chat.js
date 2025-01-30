@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import socket from "../socket";
+import { toast } from "react-toastify";
 import {
   chatContainerStyle,
   messagesStyle,
@@ -11,54 +12,77 @@ import {
 const Chat = ({ roomId }) => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("Unknown");
 
   useEffect(() => {
-    socket.emit("join room", roomId);
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        const username = decodedToken.name || "Unknown";
+        const userId = decodedToken.id;
+
+        setName(username);
+        socket.emit("join room", { roomId, userId });
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
 
     socket.on("chat message", ({ username, message }) => {
       setMessages((prevMessages) => [...prevMessages, { username, message }]);
-    });
 
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-      console.log("Decoded token:", decodedToken);
-      setUsername(decodedToken.name || decodedToken.username || "Unknown");
-    }
+      if (username !== name) {
+        toast.info(`New message from ${username}: ${message}`, {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: true,
+        });
+      }
+    });
 
     return () => {
       socket.off("chat message");
     };
-  }, [roomId]);
+  }, [roomId, name]);
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      console.log("Sending message:", { roomId, username, message });
-      socket.emit("chat message", { roomId, username, message });
+      socket.emit("chat message", { roomId, username: name, message });
       setMessage("");
     }
   };
 
   return (
     <div style={chatContainerStyle}>
-      <h5>Chat Room: {roomId}</h5>
+      <h5 style={{ textAlign: "center", marginBottom: "10px" }}>
+        Chat Room: {roomId}
+      </h5>
       <div style={messagesStyle}>
         {messages.map((msg, index) => (
-          <p key={index}>
+          <div
+            key={index}
+            style={{
+              padding: "5px 10px",
+              margin: "5px 0",
+              borderRadius: "5px",
+              backgroundColor: msg.username === name ? "#e3f2fd" : "#bbdefb",
+              alignSelf: msg.username === name ? "flex-end" : "flex-start",
+            }}
+          >
             <strong>{msg.username}:</strong> {msg.message}
-          </p>
+          </div>
         ))}
       </div>
       <div style={inputContainerStyle}>
         <input
+          style={inputStyle}
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message"
-          style={inputStyle}
         />
-        <button onClick={handleSendMessage} style={buttonStyle}>
+        <button style={buttonStyle} onClick={handleSendMessage}>
           Send
         </button>
       </div>

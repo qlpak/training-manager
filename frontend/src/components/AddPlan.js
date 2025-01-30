@@ -9,19 +9,30 @@ const AddPlan = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+
     axios
-      .post("http://localhost:3000/api/plans", {
-        name,
-        description,
-        duration: parseInt(duration),
-      })
+      .post(
+        "http://localhost:3000/api/plans",
+        {
+          name,
+          description,
+          duration: parseInt(duration),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       .then((response) => {
         setMessage("Plan added successfully!");
         setName("");
         setDescription("");
         setDuration("");
       })
-      .catch((err) => setMessage("Failed to add plan"));
+      .catch((err) => {
+        console.error("Failed to add plan:", err);
+        setMessage("Failed to add plan");
+      });
   };
 
   return (

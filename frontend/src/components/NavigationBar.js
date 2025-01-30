@@ -4,9 +4,12 @@ const Navbar = ({ setView, setIsLoggedIn, isLoggedIn }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container-fluid">
-        <a className="navbar-brand" href="#" onClick={() => setView("home")}>
+        <button
+          className="navbar-brand btn btn-link text-light"
+          onClick={() => setView("home")}
+        >
           Training Manager
-        </a>
+        </button>
         <button
           className="navbar-toggler"
           type="button"
@@ -23,30 +26,27 @@ const Navbar = ({ setView, setIsLoggedIn, isLoggedIn }) => {
             {!isLoggedIn && (
               <>
                 <li className="nav-item">
-                  <a
-                    className="nav-link"
-                    href="#"
+                  <button
+                    className="nav-link btn btn-link text-light"
                     onClick={() => setView("login")}
                   >
                     Login
-                  </a>
+                  </button>
                 </li>
                 <li className="nav-item">
-                  <a
-                    className="nav-link"
-                    href="#"
+                  <button
+                    className="nav-link btn btn-link text-light"
                     onClick={() => setView("register")}
                   >
                     Register
-                  </a>
+                  </button>
                 </li>
               </>
             )}
             {isLoggedIn && (
               <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="#"
+                <button
+                  className="nav-link btn btn-link text-light"
                   onClick={() => {
                     localStorage.clear();
                     setIsLoggedIn(false);
@@ -55,7 +55,7 @@ const Navbar = ({ setView, setIsLoggedIn, isLoggedIn }) => {
                   }}
                 >
                   Logout
-                </a>
+                </button>
               </li>
             )}
           </ul>

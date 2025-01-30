@@ -16,6 +16,15 @@ const Plan = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      intensity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        validate: {
+          min: 0,
+          max: 10,
+        },
+      },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

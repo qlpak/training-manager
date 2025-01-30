@@ -6,12 +6,18 @@ import RegisterForm from "./components/RegisterForm";
 import AdminView from "./components/AdminView";
 import CoachView from "./components/CoachView";
 import AthleteView from "./components/AthleteView";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import mqttClient from "./mqtt/mqttClient";
+import socket from "./socket";
 
 const App = () => {
   const [view, setView] = useState("home");
   const [role, setRole] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("Unknown");
+  const [userId, setUserId] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -22,21 +28,92 @@ const App = () => {
 
         setRole(decoded.role);
         setUsername(decoded.name || "Unknown");
+        setUserId(decoded.id);
         setIsLoggedIn(true);
-        console.log("User is logged in:", true);
         setView(decoded.role);
+
+        mqttClient.publish(`users/${decoded.id}/status`, "Online", {
+          retain: true,
+        });
+
+        mqttClient.subscribe(`notifications/${decoded.id}`);
+        mqttClient.subscribe("users/+/status");
       } catch (error) {
         console.error("Invalid token:", error);
         localStorage.removeItem("token");
         setIsLoggedIn(false);
-        console.log("User is logged in:", false);
         setView("login");
       }
     } else {
       setIsLoggedIn(false);
-      console.log("User is logged in:", false);
     }
-  }, []);
+
+    const handleBeforeUnload = () => {
+      if (userId) {
+        mqttClient.publish(`users/${userId}/status`, "Offline", {
+          retain: true,
+        });
+        console.log(`User ${userId} set to Offline`);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      mqttClient.unsubscribe(`notifications/${userId}`);
+      mqttClient.unsubscribe("users/+/status");
+      socket.off("chat message");
+    };
+  }, [userId, role]);
+
+  useEffect(() => {
+    const handleMqttMessage = (topic, message) => {
+      console.log(`Received MQTT message on ${topic}:`, message.toString());
+
+      const topicParts = topic.split("/");
+
+      if (topicParts[0] === "users" && topicParts[2] === "status") {
+        const athleteId = topicParts[1];
+        const status = message.toString();
+
+        if (status === "Online" && role === "coach") {
+          if (
+            !onlineUsers.has(athleteId) &&
+            athleteId !== "0" &&
+            athleteId !== "all"
+          ) {
+            setOnlineUsers((prev) => new Set(prev).add(athleteId));
+            toast.info(`Athlete ID ${athleteId} is now Online!`);
+          }
+        }
+      }
+
+      if (topicParts[0] === "notifications") {
+        const notificationData = JSON.parse(message.toString());
+        toast.info(notificationData.message);
+      }
+    };
+
+    mqttClient.on("message", handleMqttMessage);
+
+    return () => {
+      mqttClient.off("message", handleMqttMessage);
+    };
+  }, [role, onlineUsers]);
+
+  useEffect(() => {
+    const handleChatMessage = ({ username: senderName, message }) => {
+      if (senderName !== username) {
+        toast.info(`New message from ${senderName}: ${message}`);
+      }
+    };
+    socket.on("chat message", handleChatMessage);
+
+    return () => {
+      socket.off("chat message", handleChatMessage);
+    };
+  }, [username]);
 
   const renderView = () => {
     if (view === "login")
@@ -56,6 +133,7 @@ const App = () => {
 
   return (
     <div>
+      <ToastContainer />
       <Navbar
         setView={setView}
         setIsLoggedIn={setIsLoggedIn}

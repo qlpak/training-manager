@@ -13,10 +13,15 @@ const {
 const router = express.Router();
 
 router.get("/", getAllPlans);
-router.post("/", createPlan);
-router.put("/:id", updatePlan);
-router.delete("/:id", deletePlan);
-router.get("/search", searchPlans);
+router.post("/", verifyToken, authorize(["coach"]), createPlan);
+router.put("/:id", verifyToken, authorize(["coach"]), updatePlan);
+router.delete("/:id", verifyToken, authorize(["coach"]), deletePlan);
+router.get(
+  "/search",
+  verifyToken,
+  authorize(["coach", "athlete"]),
+  searchPlans
+);
 
 router.get(
   "/user/:id",
@@ -24,7 +29,8 @@ router.get(
   authorize(["athlete", "coach"]),
   getPlansByUser
 );
+router.put("/:id", verifyToken, authorize(["coach"]), updatePlan);
 
-router.post("/", verifyToken, authorize(["coach"]), createPlan);
+router.delete("/:id", verifyToken, authorize(["coach"]), deletePlan);
 
 module.exports = router;
