@@ -46,7 +46,7 @@ const App = () => {
       }
     };
 
-    if (!mqttClient.listenerCount("message")) {
+    if (mqttClient.listeners("message").length === 0) {
       mqttClient.on("message", handleMqttMessage);
     }
 
