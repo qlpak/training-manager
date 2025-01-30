@@ -1,5 +1,4 @@
 import mqtt from "mqtt";
-import { toast } from "react-toastify";
 
 const token = localStorage.getItem("token");
 let userId = null;
