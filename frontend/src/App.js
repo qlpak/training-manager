@@ -31,7 +31,7 @@ const App = () => {
             if (!prev.has(athleteId)) {
               const newUsers = new Set(prev);
               newUsers.add(athleteId);
-              toast.info(`Athlete ID ${athleteId} is now Online!`);
+              // toast.info(`Athlete ID ${athleteId} is now Online!`);
               return newUsers;
             }
             return prev;
@@ -40,7 +40,7 @@ const App = () => {
       }
       if (topicParts[0] === "notifications") {
         const notificationData = JSON.parse(message.toString());
-        toast.info(notificationData.message);
+        // toast.info(notificationData.message);
       }
     };
     if (!mqttClient.listenerCount("message")) {
@@ -69,14 +69,14 @@ const App = () => {
             athleteId !== "all"
           ) {
             setOnlineUsers((prev) => new Set(prev).add(athleteId));
-            toast.info(`Athlete ID ${athleteId} is now Online!`);
+            // toast.info(`Athlete ID ${athleteId} is now Online!`);
           }
         }
       }
 
       if (topicParts[0] === "notifications") {
         const notificationData = JSON.parse(message.toString());
-        toast.info(notificationData.message);
+        // toast.info(notificationData.message);
       }
     };
 
@@ -90,7 +90,7 @@ const App = () => {
   useEffect(() => {
     const handleChatMessage = ({ username: senderName, message }) => {
       if (senderName !== username) {
-        toast.info(`New message from ${senderName}: ${message}`);
+        // toast.info(`New message from ${senderName}: ${message}`);
       }
     };
     socket.on("chat message", handleChatMessage);

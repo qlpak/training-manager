@@ -12,7 +12,29 @@ const publishHeartRate = (athleteId, heartRate) => {
 
 const generateFakeHeartRate = () => {
   setInterval(() => {
-    const athletes = ["4", "6", "9", "10"];
+    const athletes = [
+      "4",
+      "6",
+      "9",
+      "10",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "30",
+    ];
     athletes.forEach((athleteId) => {
       const heartRate = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
       publishHeartRate(athleteId, heartRate);
