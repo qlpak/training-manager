@@ -44,9 +44,7 @@ const AthleteView = () => {
     fetchPlans();
 
     socket.on("updateRanking", (newRanking) => {
-      console.log("\ud83c\udfc6 Received new ranking:", newRanking);
       if (!Array.isArray(newRanking)) {
-        console.error("ranking: is not array", newRanking);
         return;
       }
 

@@ -48,17 +48,18 @@ setupRankingWebSocket(io);
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
-  socket.on("join room", async ({ roomId, userId }) => {
-    const user = await User.findByPk(userId);
-    if (!user) return;
+  socket.on("join room", async ({ roomId, username }) => {
     socket.join(roomId);
-    socket.username = user.name;
-    console.log(`Client ${socket.id} joined room ${roomId} as ${user.name}`);
+    socket.username = username;
+    console.log(
+      `Client ${socket.id} joined room ${roomId} as ${socket.username}`
+    );
   });
 
-  socket.on("chat message", ({ roomId, message }) => {
-    if (!socket.username || !message) return;
-    io.to(roomId).emit("chat message", { username: socket.username, message });
+  socket.on("chat message", ({ roomId, username, message }) => {
+    console.log(`Received message from ${username}: ${message}`);
+    if (!username || !message) return;
+    io.to(roomId).emit("chat message", { username, message });
   });
 
   socket.on("disconnect", () => {

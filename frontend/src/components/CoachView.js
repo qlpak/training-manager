@@ -338,11 +338,7 @@ const CoachView = () => {
         {showChat && selectedAthleteId && (
           <div className="w-1/2">
             <h3>Chat with Athlete ID: {selectedAthleteId}</h3>
-            <Chat
-              roomId={`room-${selectedAthleteId}`}
-              selectedAthleteId={selectedAthleteId}
-              username={username}
-            />
+            <Chat roomId={`room-${selectedAthleteId}`} username={username} />
           </div>
         )}
 

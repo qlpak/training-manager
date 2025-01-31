@@ -9,46 +9,39 @@ import {
   buttonStyle,
 } from "./ChatStyles";
 
-const Chat = ({ roomId }) => {
+const Chat = ({ roomId, username }) => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [name, setName] = useState("Unknown");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        const username = decodedToken.name || "Unknown";
-        const userId = decodedToken.id;
+    setMessages([]);
 
-        setName(username);
-        socket.emit("join room", { roomId, userId });
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    }
+    socket.emit("join room", { roomId, username });
+  }, [roomId, username]);
 
-    socket.on("chat message", ({ username, message }) => {
+  useEffect(() => {
+    const handleMessage = ({ username, message }) => {
       setMessages((prevMessages) => [...prevMessages, { username, message }]);
 
-      if (username !== name) {
-        toast.info(`New message from ${username}: ${message}`, {
-          position: "bottom-right",
-          autoClose: 3000,
-          hideProgressBar: true,
-        });
+      if (username !== username) {
+        // toast.info(`New message ${username}: ${message}`, {
+        //   position: "bottom-right",
+        //   autoClose: 3000,
+        //   hideProgressBar: true,
+        // });
       }
-    });
+    };
+
+    socket.on("chat message", handleMessage);
 
     return () => {
-      socket.off("chat message");
+      socket.off("chat message", handleMessage);
     };
-  }, [roomId, name]);
+  }, [roomId, username]);
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      socket.emit("chat message", { roomId, username: name, message });
+      socket.emit("chat message", { roomId, username, message });
       setMessage("");
     }
   };
@@ -66,8 +59,9 @@ const Chat = ({ roomId }) => {
               padding: "5px 10px",
               margin: "5px 0",
               borderRadius: "5px",
-              backgroundColor: msg.username === name ? "#e3f2fd" : "#bbdefb",
-              alignSelf: msg.username === name ? "flex-end" : "flex-start",
+              backgroundColor:
+                msg.username === username ? "#e3f2fd" : "#bbdefb",
+              alignSelf: msg.username === username ? "flex-end" : "flex-start",
             }}
           >
             <strong>{msg.username}:</strong> {msg.message}

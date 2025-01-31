@@ -22,7 +22,6 @@ const App = () => {
   useEffect(() => {
     const handleMqttMessage = (topic, message) => {
       console.log(`Received MQTT message on ${topic}:`, message.toString());
-
       const topicParts = topic.split("/");
       if (topicParts[0] === "users" && topicParts[2] === "status") {
         const athleteId = topicParts[1];
@@ -39,14 +38,12 @@ const App = () => {
           });
         }
       }
-
       if (topicParts[0] === "notifications") {
         const notificationData = JSON.parse(message.toString());
         toast.info(notificationData.message);
       }
     };
-
-    if (mqttClient.listeners("message").length === 0) {
+    if (!mqttClient.listenerCount("message")) {
       mqttClient.on("message", handleMqttMessage);
     }
 
