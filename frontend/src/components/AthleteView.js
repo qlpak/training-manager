@@ -180,7 +180,7 @@ const AthleteView = () => {
         </div>
 
         <div className="flex-grow-1" style={{ minWidth: "48%" }}>
-          <h3 className="text-center">🥇 User Ranking</h3>
+          <h3 className="text-center">🥇 Athlete Calorie Ranking</h3>
           <table className="table table-striped small-table">
             <thead>
               <tr>
